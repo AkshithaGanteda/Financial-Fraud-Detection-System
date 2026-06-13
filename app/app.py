@@ -7,6 +7,7 @@ import seaborn as sns
 import plotly.express as px
 import plotly.graph_objects as go
 import os
+import time
 # =========================================================
 # PAGE CONFIG
 # =========================================================
@@ -274,16 +275,11 @@ st.markdown("""
 # LOAD MODEL
 # =========================================================
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+@st.cache_resource
+def load_model():
+    return joblib.load("../models/fraud_detection_model.pkl")
 
-MODEL_PATH = os.path.join(
-    BASE_DIR,
-    "..",
-    "models",
-    "fraud_detection_model.pkl"
-)
-
-model = joblib.load(MODEL_PATH)
+model = load_model()
 uploaded_file = None
 feature_columns = [
     'Time',
@@ -634,44 +630,42 @@ if page == "📝 Manual Prediction":
 if page == "📂 CSV Prediction":
     st.header("📂 CSV Prediction")
     st.subheader(" Upload CSV File")
-
+    st.info("⚡ For faster processing, upload files up to 10,000 transactions.")
     uploaded_file = st.file_uploader(
         "Choose CSV File",
         type=["csv"]
     )
 
     if uploaded_file is not None:
-        if uploaded_file.size > 10 * 1024 * 1024:
-          st.error("Please upload a CSV smaller than 10 MB")
-          st.stop()
         # Read CSV
-        data = pd.read_csv(uploaded_file,nrows=1000)
-
+        data = pd.read_csv(uploaded_file)
+        if len(data) > 10000:
+            st.warning("Large file detected. Processing first 10,000 rows.")
+            data = data.head(10000)
+            st.write("Rows Uploaded:", len(data))
         # Prediction
         X = data[feature_columns]
 
-        import time
+        with st.spinner("🔄 Analyzing transactions..."):
+            start = time.time()
 
-        # Prediction
-        start = time.time()
-        predictions = model.predict(X)
-        probabilities = model.predict_proba(X)
-        st.write("Prediction:", round(time.time()-start,2), "sec")
+            predictions = model.predict(X)
+            probabilities = model.predict_proba(X)
+            end = time.time()
 
-        # Table
-        start = time.time()
-        st.dataframe(result_data.head(20))
-        st.write("Table:", round(time.time()-start,2), "sec")
-
-        # Charts
-        start = time.time()
-        st.bar_chart(count_df.set_index("Type"))
-        st.write("Bar Chart:", round(time.time()-start,2), "sec")
+            st.write(f"⏱ Processing Time: {end-start:.2f} seconds")
+        st.success("✅ Analysis Completed")
 
         # Result Data
         result_data = data.copy()
         result_data["Prediction"] = predictions
         result_data["Fraud_Probability"] = probabilities[:, 1] * 100
+        
+        st.session_state["result_data"] = result_data
+
+        st.session_state["fraud_count"] = (predictions == 1).sum()
+
+        st.session_state["legitimate_count"] = (predictions == 0).sum()
 
         fraud_count = (predictions == 1).sum()
         legitimate_count = (predictions == 0).sum()
@@ -711,7 +705,8 @@ if page == "📂 CSV Prediction":
             autopct="%1.1f%%"
         )
 
-        
+        st.pyplot(fig1)
+
         # =====================================================
         # HISTOGRAM 1
         # =====================================================
@@ -728,7 +723,7 @@ if page == "📂 CSV Prediction":
         ax2.set_xlabel("Amount")
         ax2.set_ylabel("Frequency")
 
-        
+        st.pyplot(fig2)
 
         # =====================================================
         # HISTOGRAM 2
@@ -746,7 +741,7 @@ if page == "📂 CSV Prediction":
         ax3.set_xlabel("Fraud Probability (%)")
         ax3.set_ylabel("Transactions")
 
-        
+        st.pyplot(fig3)
 
         # =====================================================
         # CONFUSION MATRIX
@@ -773,7 +768,7 @@ if page == "📂 CSV Prediction":
         ax4.set_ylabel("Actual")
         ax4.set_title("Confusion Matrix")
 
-        
+        st.pyplot(fig4)
 
         # =====================================================
         # METRICS
