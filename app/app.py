@@ -275,11 +275,16 @@ st.markdown("""
 # LOAD MODEL
 # =========================================================
 
+
 @st.cache_resource
 def load_model():
-    return joblib.load("../models/fraud_detection_model.pkl")
-
-model = load_model()
+    model_path = os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "models",
+        "fraud_detection_model.pkl"
+    )
+    return joblib.load(model_path)
 uploaded_file = None
 feature_columns = [
     'Time',
