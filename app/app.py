@@ -594,31 +594,34 @@ if page == "📝 Manual Prediction":
     # PREDICTION BUTTON
     # =====================================================
 
-    if st.button("🚨 Predict Fraud"):
+if st.button("🚨 Predict Fraud"):
     
-        try:
-            st.write("Model exists:", 'model' in globals())
-            st.write("Features exists:", 'features' in locals())
+    try:
+        prediction = model.predict(features)
 
-            st.write(features.shape)
+        probabilities = model.predict_proba(features)
 
-            prediction = model.predict(features)
+        fraud_probability = probabilities[0][1] * 100
 
-            probabilities = model.predict_proba(features)
+        st.progress(int(fraud_probability))
 
-            st.success("Prediction successful")
+        st.write(
+            f"Risk Score: {fraud_probability:.2f}%"
+        )
 
-        except Exception as e:
-            st.error(f"ERROR: {e}")
+        st.subheader("Prediction Result")
+
+        st.metric(
+            label="Fraud Probability",
+            value=f"{fraud_probability:.2f}%"
+        )
 
         if prediction[0] == 1:
             st.error("⚠ Fraudulent Transaction Detected")
         else:
             st.success("✅ Legitimate Transaction")
-# =====================================================
-# RISK LEVEL
-# =====================================================
 
+        # Risk Level
         if fraud_probability < 30:
             st.success("🟢 Risk Level: LOW")
 
@@ -627,6 +630,9 @@ if page == "📝 Manual Prediction":
 
         else:
             st.error("🔴 Risk Level: HIGH")
+
+    except Exception as e:
+        st.error(f"ERROR: {e}")
 
 # =========================================================
 # TAB 2 - CSV UPLOAD
@@ -641,55 +647,59 @@ if page == "📂 CSV Prediction":
     )
 
     if uploaded_file is not None:
-        # Read CSV
+        
         data = pd.read_csv(uploaded_file)
+
         if len(data) > 10000:
-            st.warning("Large file detected. Processing first 10,000 rows.")
+            st.warning(
+                "Large file detected. Processing first 10,000 rows."
+            )
             data = data.head(10000)
-            st.write("Rows Uploaded:", len(data))
-            missing_cols = [col for col in feature_columns if col not in data.columns]
+
+        st.write("Rows Uploaded:", len(data))
+
+        missing_cols = [
+            col for col in feature_columns
+            if col not in data.columns
+        ]
 
         if missing_cols:
             st.error(f"Missing columns: {missing_cols}")
             st.stop()
-        # Prediction
+
         X = data[feature_columns]
 
         with st.spinner("🔄 Analyzing transactions..."):
+
             start = time.time()
 
             predictions = model.predict(X)
+
             probabilities = model.predict_proba(X)
+
             end = time.time()
 
-            st.write(f"⏱ Processing Time: {end-start:.2f} seconds")
+        st.write(
+            f"⏱ Processing Time: {end-start:.2f} seconds"
+        )
+
         st.success("✅ Analysis Completed")
 
-        # Result Data
         result_data = data.copy()
+
         result_data["Prediction"] = predictions
-        result_data["Fraud_Probability"] = probabilities[:, 1] * 100
-        
-        st.session_state["result_data"] = result_data
 
-        st.session_state["fraud_count"] = (predictions == 1).sum()
-
-        st.session_state["legitimate_count"] = (predictions == 0).sum()
+        result_data["Fraud_Probability"] = (
+            probabilities[:, 1] * 100
+        )
 
         fraud_count = (predictions == 1).sum()
-        legitimate_count = (predictions == 0).sum()
 
-        # =====================================================
-        # TABLE
-        # =====================================================
+        legitimate_count = (predictions == 0).sum()
 
         st.subheader("📋 Prediction Results")
 
         st.dataframe(result_data.head(20))
-
-        # =====================================================
-        # BAR CHART
-        # =====================================================
 
         st.subheader("📊 Fraud Distribution")
 
