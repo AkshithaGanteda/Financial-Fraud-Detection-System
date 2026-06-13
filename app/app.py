@@ -7,7 +7,6 @@ import seaborn as sns
 import plotly.express as px
 import plotly.graph_objects as go
 import os
-
 # =========================================================
 # PAGE CONFIG
 # =========================================================
@@ -644,18 +643,29 @@ if page == "📂 CSV Prediction":
     if uploaded_file is not None:
 
         # Read CSV
-        data = pd.read_csv(uploaded_file, nrows=5000)
+        data = pd.read_csv(uploaded_file,nrows=5000)
 
         # Prediction
         X = data[feature_columns]
 
+        import time
+
+        start = time.time()
+
         predictions = model.predict(X)
-        //probabilities = model.predict_proba(X)
+
+        st.write("Prediction Time:", round(time.time() - start, 2), "seconds")
+
+        start = time.time()
+
+        probabilities = model.predict_proba(X)
+
+        st.write("Probability Time:", round(time.time() - start, 2), "seconds")
 
         # Result Data
         result_data = data.copy()
         result_data["Prediction"] = predictions
-        //result_data["Fraud_Probability"] = probabilities[:, 1] * 100
+        result_data["Fraud_Probability"] = probabilities[:, 1] * 100
 
         fraud_count = (predictions == 1).sum()
         legitimate_count = (predictions == 0).sum()
@@ -666,7 +676,7 @@ if page == "📂 CSV Prediction":
 
         st.subheader("📋 Prediction Results")
 
-        //st.dataframe(result_data.head(20))
+        st.dataframe(result_data.head(20))
 
         # =====================================================
         # BAR CHART
@@ -679,7 +689,7 @@ if page == "📂 CSV Prediction":
             "Count": [legitimate_count, fraud_count]
         })
 
-        //st.bar_chart(count_df.set_index("Type"))
+        st.bar_chart(count_df.set_index("Type"))
 
         # =====================================================
         # PIE CHART
@@ -695,7 +705,7 @@ if page == "📂 CSV Prediction":
             autopct="%1.1f%%"
         )
 
-        //st.pyplot(fig1)
+        st.pyplot(fig1)
 
         # =====================================================
         # HISTOGRAM 1
@@ -713,7 +723,7 @@ if page == "📂 CSV Prediction":
         ax2.set_xlabel("Amount")
         ax2.set_ylabel("Frequency")
 
-        //st.pyplot(fig2)
+        st.pyplot(fig2)
 
         # =====================================================
         # HISTOGRAM 2
@@ -731,7 +741,7 @@ if page == "📂 CSV Prediction":
         ax3.set_xlabel("Fraud Probability (%)")
         ax3.set_ylabel("Transactions")
 
-        //st.pyplot(fig3)
+        st.pyplot(fig3)
 
         # =====================================================
         # CONFUSION MATRIX
@@ -758,14 +768,8 @@ if page == "📂 CSV Prediction":
         ax4.set_ylabel("Actual")
         ax4.set_title("Confusion Matrix")
 
-        //st.pyplot(fig4)
-        import time
+        st.pyplot(fig4)
 
-        start = time.time()
-
-        predictions = model.predict(X)
-
-        st.write("Prediction Time:", round(time.time() - start, 2), "seconds")
         # =====================================================
         # METRICS
         # =====================================================
