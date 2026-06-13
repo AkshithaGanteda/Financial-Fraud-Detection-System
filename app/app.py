@@ -643,9 +643,9 @@ if page == "📂 CSV Prediction":
     if uploaded_file is not None:
         if uploaded_file.size > 10 * 1024 * 1024:
           st.error("Please upload a CSV smaller than 10 MB")
-        st.stop()
+          st.stop()
         # Read CSV
-        data = pd.read_csv(uploaded_file,nrows=5000)
+        data = pd.read_csv(uploaded_file,nrows=1000)
 
         # Prediction
         X = data[feature_columns]
@@ -711,8 +711,7 @@ if page == "📂 CSV Prediction":
             autopct="%1.1f%%"
         )
 
-        st.pyplot(fig1)
-
+        
         # =====================================================
         # HISTOGRAM 1
         # =====================================================
@@ -729,7 +728,7 @@ if page == "📂 CSV Prediction":
         ax2.set_xlabel("Amount")
         ax2.set_ylabel("Frequency")
 
-        st.pyplot(fig2)
+        
 
         # =====================================================
         # HISTOGRAM 2
@@ -747,7 +746,7 @@ if page == "📂 CSV Prediction":
         ax3.set_xlabel("Fraud Probability (%)")
         ax3.set_ylabel("Transactions")
 
-        st.pyplot(fig3)
+        
 
         # =====================================================
         # CONFUSION MATRIX
@@ -774,7 +773,7 @@ if page == "📂 CSV Prediction":
         ax4.set_ylabel("Actual")
         ax4.set_title("Confusion Matrix")
 
-        st.pyplot(fig4)
+        
 
         # =====================================================
         # METRICS
