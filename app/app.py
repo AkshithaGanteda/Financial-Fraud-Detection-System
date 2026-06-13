@@ -594,45 +594,45 @@ if page == "📝 Manual Prediction":
     # PREDICTION BUTTON
     # =====================================================
 
-if st.button("🚨 Predict Fraud"):
-    
-    try:
-        prediction = model.predict(features)
+    if st.button("🚨 Predict Fraud"):
+        
+        try:
+            prediction = model.predict(features)
 
-        probabilities = model.predict_proba(features)
+            probabilities = model.predict_proba(features)
 
-        fraud_probability = probabilities[0][1] * 100
+            fraud_probability = probabilities[0][1] * 100
 
-        st.progress(int(fraud_probability))
+            st.progress(int(fraud_probability))
 
-        st.write(
-            f"Risk Score: {fraud_probability:.2f}%"
-        )
+            st.write(
+                f"Risk Score: {fraud_probability:.2f}%"
+            )
 
-        st.subheader("Prediction Result")
+            st.subheader("Prediction Result")
 
-        st.metric(
-            label="Fraud Probability",
-            value=f"{fraud_probability:.2f}%"
-        )
+            st.metric(
+                label="Fraud Probability",
+                value=f"{fraud_probability:.2f}%"
+            )
 
-        if prediction[0] == 1:
-            st.error("⚠ Fraudulent Transaction Detected")
-        else:
-            st.success("✅ Legitimate Transaction")
+            if prediction[0] == 1:
+                st.error("⚠ Fraudulent Transaction Detected")
+            else:
+                st.success("✅ Legitimate Transaction")
 
-        # Risk Level
-        if fraud_probability < 30:
-            st.success("🟢 Risk Level: LOW")
+            # Risk Level
+            if fraud_probability < 30:
+                st.success("🟢 Risk Level: LOW")
 
-        elif fraud_probability < 70:
-            st.warning("🟡 Risk Level: MEDIUM")
+            elif fraud_probability < 70:
+                st.warning("🟡 Risk Level: MEDIUM")
 
-        else:
-            st.error("🔴 Risk Level: HIGH")
+            else:
+                st.error("🔴 Risk Level: HIGH")
 
-    except Exception as e:
-        st.error(f"ERROR: {e}")
+        except Exception as e:
+            st.error(f"ERROR: {e}")
 
 # =========================================================
 # TAB 2 - CSV UPLOAD
