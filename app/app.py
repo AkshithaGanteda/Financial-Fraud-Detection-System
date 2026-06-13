@@ -641,7 +641,9 @@ if page == "📂 CSV Prediction":
     )
 
     if uploaded_file is not None:
-
+        if uploaded_file.size > 10 * 1024 * 1024:
+          st.error("Please upload a CSV smaller than 10 MB")
+        st.stop()
         # Read CSV
         data = pd.read_csv(uploaded_file,nrows=5000)
 
@@ -650,17 +652,21 @@ if page == "📂 CSV Prediction":
 
         import time
 
+        # Prediction
         start = time.time()
-
         predictions = model.predict(X)
-
-        st.write("Prediction Time:", round(time.time() - start, 2), "seconds")
-
-        start = time.time()
-
         probabilities = model.predict_proba(X)
+        st.write("Prediction:", round(time.time()-start,2), "sec")
 
-        st.write("Probability Time:", round(time.time() - start, 2), "seconds")
+        # Table
+        start = time.time()
+        st.dataframe(result_data.head(20))
+        st.write("Table:", round(time.time()-start,2), "sec")
+
+        # Charts
+        start = time.time()
+        st.bar_chart(count_df.set_index("Type"))
+        st.write("Bar Chart:", round(time.time()-start,2), "sec")
 
         # Result Data
         result_data = data.copy()
