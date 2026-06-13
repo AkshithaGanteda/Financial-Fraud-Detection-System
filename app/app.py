@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
 import plotly.graph_objects as go
+import os
 # =========================================================
 # PAGE CONFIG
 # =========================================================
@@ -273,7 +274,16 @@ st.markdown("""
 # LOAD MODEL
 # =========================================================
 
-model = joblib.load("../models/fraud_detection_model.pkl")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+MODEL_PATH = os.path.join(
+    BASE_DIR,
+    "..",
+    "models",
+    "fraud_detection_model.pkl"
+)
+
+model = joblib.load(MODEL_PATH)
 uploaded_file = None
 feature_columns = [
     'Time',
@@ -538,6 +548,7 @@ if page == "🏠 Dashboard":
     })
 
     st.dataframe(recent_data, use_container_width=True)
+    st.divider()
 
 # =========================================================
 # TABS
