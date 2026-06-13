@@ -285,6 +285,7 @@ def load_model():
         "fraud_detection_model.pkl"
     )
     return joblib.load(model_path)
+model = load_model()
 uploaded_file = None
 feature_columns = [
     'Time',
@@ -595,22 +596,20 @@ if page == "📝 Manual Prediction":
 
     if st.button("🚨 Predict Fraud"):
     
-        prediction = model.predict(features)
+        try:
+            st.write("Model exists:", 'model' in globals())
+            st.write("Features exists:", 'features' in locals())
 
-        probabilities = model.predict_proba(features)
+            st.write(features.shape)
 
-        fraud_probability = probabilities[0][1] * 100
-        st.progress(int(fraud_probability))
+            prediction = model.predict(features)
 
-        st.write(
-            f"Risk Score: {fraud_probability:.2f}%"
-        )
-        st.subheader("Prediction Result")
+            probabilities = model.predict_proba(features)
 
-        st.metric(
-            label="Fraud Probability",
-            value=f"{fraud_probability:.2f}%"
-        )
+            st.success("Prediction successful")
+
+        except Exception as e:
+            st.error(f"ERROR: {e}")
 
         if prediction[0] == 1:
             st.error("⚠ Fraudulent Transaction Detected")
@@ -648,6 +647,11 @@ if page == "📂 CSV Prediction":
             st.warning("Large file detected. Processing first 10,000 rows.")
             data = data.head(10000)
             st.write("Rows Uploaded:", len(data))
+            missing_cols = [col for col in feature_columns if col not in data.columns]
+
+        if missing_cols:
+            st.error(f"Missing columns: {missing_cols}")
+            st.stop()
         # Prediction
         X = data[feature_columns]
 
