@@ -643,7 +643,7 @@ if page == "📂 CSV Prediction":
     if uploaded_file is not None:
 
         # Read CSV
-        data = pd.read_csv(uploaded_file,nrows=10000)
+        data = pd.read_csv(uploaded_file, nrows=5000)
 
         # Prediction
         X = data[feature_columns]
